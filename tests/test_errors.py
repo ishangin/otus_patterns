@@ -10,10 +10,9 @@ from server import server
 from server.server import Server
 from errors.exception_handler import ExceptionHandler
 
-
-SERVER = Server()
-
 Q = Queue()
+
+SERVER = Server(Q)
 
 EX_HANDLER = ExceptionHandler(Q)
 
