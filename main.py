@@ -1,11 +1,10 @@
 import logging
-# import subprocess
+from server.server import Server
 # import sys
 from typing import Any
 
 from interfaces.uobject import UObject
 
-__all__ = ['SpaceShip', 'log']
 
 FORMAT = '%(asctime)s %(levelname)s %(name)s %(message)s'
 logging.basicConfig(format=FORMAT, level=logging.INFO)
@@ -39,7 +38,14 @@ class SpaceShip(UObject):
 
 
 if __name__ == '__main__':
-    pass
+    s = Server()
+    s.start()
+    # s.put_command(LogWriter(ValueError('test')))
+    # IoC.resolve('Worker.New', s).execute()
+    # IoC.resolve('Game.New').execute()
+    # s.put_command(IoC.resolve('Game.New'))
+    s.stop()
+    print('END')
 
     # server_start_cmd = [sys.executable, '-m', 'server']
     # subprocess.Popen('')

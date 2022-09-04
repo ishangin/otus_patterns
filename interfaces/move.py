@@ -36,6 +36,7 @@ class Movable(ABC):
         ...
 
     @velocity.setter
+    @abstractmethod
     def velocity(self, value: Vector) -> None:
         """
         setter velocity

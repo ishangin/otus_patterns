@@ -1,6 +1,8 @@
+import logging
 from interfaces.command import Command
 from errors.errors import CommandException
-from main import log
+
+log = logging.getLogger(__name__)
 
 
 class MacroCommand(Command):

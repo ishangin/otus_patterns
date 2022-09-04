@@ -1,6 +1,6 @@
 from typing import Any
 
-# from interfaces.move import Movable
+from interfaces.move import Movable
 # from interfaces.rotate import Rotable
 from interfaces.uobject import UObject
 from ioc.container import IoC
@@ -90,16 +90,16 @@ IoC.resolve(
 # ------------
 
 
-# class Obj(UObject):
-#     def __init__(self, pos, vel):
-#         self.position = pos
-#         self.velocity = vel
-#
-#     def get_property(self, name: str) -> Any:
-#         return self.__getattribute__(name)
-#
-#     def set_property(self, name: str, value: Any) -> None:
-#         self.__setattr__(name, value)
+class Obj(UObject):
+    def __init__(self, pos, vel):
+        self.position = pos
+        self.velocity = vel
+
+    def get_property(self, name: str) -> Any:
+        return self.__getattribute__(name)
+
+    def set_property(self, name: str, value: Any) -> None:
+        self.__setattr__(name, value)
 
 
 # if __name__ == '__main__':

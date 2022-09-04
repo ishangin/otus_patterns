@@ -1,5 +1,8 @@
+import logging
+
 from interfaces.command import Command
-from main import log
+
+log = logging.getLogger(__name__)
 
 
 class LogWriter(Command):
