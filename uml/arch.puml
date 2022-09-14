@@ -1,0 +1,47 @@
+@startuml
+'https://plantuml.com/component-diagram
+
+component server {
+    component auth
+    component worker
+    component notifier
+    component agent_connection_manager
+    component message_receiver
+    component data_adapter
+}
+
+component client {
+    component agent
+    component ui
+}
+
+
+component "storage" {
+    database "database" {
+        [users]
+        [games]
+        [tournaments]
+        [scores]
+        [ratings]
+        [history]
+        [...]
+    }
+}
+
+component message_broker {
+    [messages_routing]
+}
+
+[ui] <-> [agent]
+[agent] <--> [agent_connection_manager]
+[agent_connection_manager] --> [message_receiver]
+[auth] <---> [messages_routing]
+[notifier] <---> [messages_routing]
+[messages_routing] ---> [agent_connection_manager]
+[message_receiver] ---> [messages_routing]
+[messages_routing] <---> [worker]
+[messages_routing] <---> [data_adapter]
+[data_adapter] <---> database
+
+
+@enduml
