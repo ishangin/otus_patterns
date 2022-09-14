@@ -6,6 +6,7 @@ import logging
 
 # from commands.game import GameCommand
 import commands
+from db import GAMES
 # from commands.worker import NewWorker, StopWorker, SoftStopWorker
 from errors.exception_handler import ExceptionHandler
 from interfaces.command import Command
@@ -18,6 +19,7 @@ from server.message.operations import OPERATIONS
 __all__ = ['Server']
 
 log = logging.getLogger(__name__)
+
 
 class STATUS (Enum):
     STOPPED = 0
@@ -127,6 +129,10 @@ class Server:
             game_id = self.new_game(worker)
         else:
             game_id = messsage.game_id
+            jwt = messsage.command_info.args.get('jwt')
+            if not jwt or jwt not in GAMES[game_id]['tokens']:
+                log.warning(f'DROP {messsage=}, invalid token')
+                return
             worker = self.games.get(messsage.game_id)
         if worker:
             self.put_command(cmd=IoC.resolve('Command.Interpret', worker.queue, messsage.command_info),
