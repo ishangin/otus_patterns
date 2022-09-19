@@ -10,13 +10,16 @@ from db import GAMES
 # from commands.worker import NewWorker, StopWorker, SoftStopWorker
 from errors.exception_handler import ExceptionHandler
 from interfaces.command import Command
+from interfaces.state import State
 from ioc.container import IoC
 from server.connector import Connector
 
 from server.message import Message
 from server.message.operations import OPERATIONS
 
-__all__ = ['Server']
+__all__ = ['Server', 'Worker']
+
+from server.modes import Mode, Normal
 
 log = logging.getLogger(__name__)
 
@@ -27,7 +30,7 @@ class STATUS (Enum):
 
 
 class Worker:
-    def __init__(self, worker_id: int, queue: Queue, ex_handler: ExceptionHandler):
+    def __init__(self, worker_id: int, queue: Queue, ex_handler: ExceptionHandler, mode: State = Normal()):
         self.id = worker_id
         self.status = STATUS.STOPPED
         self._worker_thread = threading.Thread(name=f'worker{self.id}', target=self._process)
@@ -36,6 +39,7 @@ class Worker:
         self._soft_stop_event = threading.Event()
         self.queue = queue
         self._ex_handler = ex_handler
+        self.mode = Mode(mode)
 
     def stop(self):
         self._stop_event.set()
@@ -75,7 +79,7 @@ class Worker:
                     continue
             log.info(f'{self._worker_thread.name} : ID {self.id} : PID {threading.current_thread().ident} : CMD {cmd}')
             try:
-                cmd.execute()
+                self.mode.execute(cmd=cmd)
 
             except Exception as ex:
                 self._ex_handler.handle(cmd, ex)
@@ -156,6 +160,9 @@ class Server:
 
     def get_worker(self) -> Worker:
         return choice(self._workers)
+
+    def change_worker_mode(self, worker_id: int, mode: State):
+        self._workers[worker_id].mode = Mode(mode)
 
 
 IoC.resolve('IoC.Register', 'Worker.New', commands.NewWorker).execute()

@@ -32,7 +32,9 @@ class Connector:
         self._accept_connection_thread.start()
 
     def process(self):
-        log.info(f'START: AcceptConnThread (listen {HOST}:{PORT})')
+        # log.info(f'START: AcceptConnThread (listen {HOST}:{PORT})')
+        log.info(f'START: AcceptConnThread (listen {self.listener._listener._socket.getsockname()})')
+
         while not self.stop_event.is_set():
             events = self._selector.select(timeout=1)
             for key, mask in events:

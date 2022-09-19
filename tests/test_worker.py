@@ -59,21 +59,20 @@ class TestWorkerCommands:
         with pytest.raises(AttributeError):
             SoftStopWorker(BrokenFakeServer, 0).execute()
 
-    @pytest.mark.skip('change server queue in workers')
+    # @pytest.mark.skip('change server queue in workers')
     def test_check_real_threads(self):
-        q = Queue()
         s = Server()
         s.start()
+        s.new_game(s._workers.get(0))
         assert len(s._workers) == 1
 
 # hard stop worker test
         for _ in range(2):
-            s.put_command(EmptyCmd())
-        s.put_command(StopWorker(s, 0))
+            s.put_command(EmptyCmd(), 0)
+        s.put_command(StopWorker(s, 0), 0)
         for _ in range(3):
-            s.put_command(EmptyCmd())
+            s.put_command(EmptyCmd(), 0)
         sleep(2)
-        assert q.qsize() == 3
         assert len(s._workers) == 0
 
 # start worker test
@@ -81,16 +80,16 @@ class TestWorkerCommands:
         # s.spawn_worker()
         # s.put_command(NewWorker(s))
         NewWorker(s).execute()
+
         assert len(s._workers) == 1
         assert threads_count == len(s._workers) - 1
-
+        s.games.update({0: s._workers[0]})
 # soft stop worker test
-        s.put_command(SleepCmd(1))
-        s.put_command(SoftStopWorker(s, 0))
+        s.put_command(SleepCmd(1), 0)
+        s.put_command(SoftStopWorker(s, 0), 0)
         for _ in range(3):
-            s.put_command(EmptyCmd())
+            s.put_command(EmptyCmd(), 0)
         sleep(3)
-        assert q.qsize() == 0
         assert len(s._workers) == 0
 
         s.stop()
