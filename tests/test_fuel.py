@@ -1,7 +1,7 @@
 import pytest
 
 import main
-from Interfaces.fuel import Fuelable
+from interfaces.fuel import Fuelable
 from commands.burn_fuel import BurnFuel
 from commands.check_fuel import CheckFuel
 from errors.errors import CommandException

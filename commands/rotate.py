@@ -1,5 +1,5 @@
-from Interfaces.command import Command
-from Interfaces.rotate import Rotable
+from interfaces.command import Command
+from interfaces.rotate import Rotable
 
 
 class Rotate(Command):

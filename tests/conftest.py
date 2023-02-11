@@ -1,9 +1,12 @@
+from typing import Any
+
 import pytest
 
 
-from Interfaces.move import Movable
-from Interfaces.rotate import Rotable
-from Interfaces.fuel import Fuelable
+from interfaces.move import Movable
+from interfaces.rotate import Rotable
+from interfaces.fuel import Fuelable
+from interfaces.uobject import UObject
 from mtypes.vector import Vector
 
 
@@ -126,6 +129,18 @@ class ScopesTest:
         ...
 
 
+class UObj(UObject):
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            self.__setattr__(k, v)
+
+    def get_property(self, name: str) -> Any:
+        return self.__getattribute__(name)
+
+    def set_property(self, name: str, value: Any) -> None:
+        self.__setattr__(name, value)
+
+
 @pytest.fixture()
 def mockobj():
     return MockObj
@@ -149,3 +164,8 @@ def mockobj_fuel():
 @pytest.fixture()
 def scopes_test():
     return ScopesTest
+
+
+@pytest.fixture()
+def uobj():
+    return UObj

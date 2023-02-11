@@ -1,8 +1,8 @@
 from typing import TypeVar
 
-from Interfaces.move import Movable
-from Interfaces.rotate import Rotable
-from Interfaces.fuel import Fuelable
+from interfaces.move import Movable
+from interfaces.rotate import Rotable
+from interfaces.fuel import Fuelable
 
 __all__ = ['MR', 'MF', 'RF', 'MRF']
 
