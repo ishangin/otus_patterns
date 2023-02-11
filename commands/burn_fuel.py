@@ -1,5 +1,5 @@
-from Interfaces.command import Command
-from Interfaces.fuel import Fuelable
+from interfaces.command import Command
+from interfaces.fuel import Fuelable
 
 
 class BurnFuel(Command):

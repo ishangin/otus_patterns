@@ -1,7 +1,7 @@
 from queue import Queue
 
-from Interfaces.command import Command
-from Interfaces.move import Movable
+from interfaces.command import Command
+from interfaces.move import Movable
 from errors.exception_handler import ExceptionHandler
 from mtypes.vector import Vector
 

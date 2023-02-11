@@ -1,6 +1,6 @@
 import pytest
 
-from Interfaces.command import Command
+from interfaces.command import Command
 from commands.repeater import DoubleRepeater
 
 

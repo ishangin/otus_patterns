@@ -1,8 +1,8 @@
 from math import cos, sin, pi
 
-from Interfaces.command import Command
-from Interfaces.move import Movable
-from Interfaces.rotate import Rotable
+from interfaces.command import Command
+from interfaces.move import Movable
+from interfaces.rotate import Rotable
 from mtypes.vector import Vector
 
 

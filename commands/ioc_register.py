@@ -1,4 +1,4 @@
-from Interfaces.command import Command
+from interfaces.command import Command
 from ioc.container import IoC
 
 

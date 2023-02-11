@@ -1,6 +1,6 @@
 from queue import Queue
 
-from Interfaces.command import Command
+from interfaces.command import Command
 from commands.check_fuel import CheckFuel
 from commands.repeater import Repeater, DoubleRepeater
 from commands.log_writer import LogWriter

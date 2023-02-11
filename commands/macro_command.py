@@ -1,4 +1,4 @@
-from Interfaces.command import Command
+from interfaces.command import Command
 from errors.errors import CommandException
 from main import log
 

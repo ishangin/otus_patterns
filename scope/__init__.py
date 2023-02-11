@@ -1,5 +1,6 @@
 import threading
 
+from adapters import AdapterMetaclass
 from commands.scope import ScopeNew, ScopeSetCurrent
 from ioc.container import Register
 
@@ -17,6 +18,15 @@ class Scopes(threading.local):
         root_scope.__setattr__('IoC.Register', Register)
         root_scope.__setattr__('Scope.New', ScopeNew)
         root_scope.__setattr__('Scope.SetCurrent', ScopeSetCurrent)
+        root_scope.__setattr__(
+            'Adapter.Create',
+            lambda interface, obj: AdapterMetaclass(
+                f'{interface.__name__}Adapter',
+                (),
+                {'interface': interface}
+            )(obj)
+        )
+
         self.value: dict = {0: root_scope}  # set root scope
         self._max_scope_id: int = 0
         self._cur_scope: int = 0

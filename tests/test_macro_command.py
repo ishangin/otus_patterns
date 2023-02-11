@@ -1,7 +1,7 @@
 import pytest
 
 import main
-from Interfaces.command import Command
+from interfaces.command import Command
 from commands.burn_fuel import BurnFuel
 from commands.change_velocity import ChangeVelocity
 from commands.check_fuel import CheckFuel
