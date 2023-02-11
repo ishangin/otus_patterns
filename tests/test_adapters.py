@@ -14,7 +14,7 @@ class TestAdapters:
 
     def test_adapter_creator0(self, uobj):
         """ create adapter with IoC """
-        IoC.resolve('Scope.New', IoC.scopes, IoC.scopes.current_scope.id).execute()
+        IoC.resolve('Scope.New', IoC.scopes.current_scope.id).execute()
         IoC.resolve('IoC.Register', 'Movable.Position.Get', lambda o: o.get_property('position')).execute()
         IoC.resolve('IoC.Register', 'Movable.Position.Set', lambda o, val: o.set_property('position', val)).execute()
         IoC.resolve('IoC.Register', 'Movable.Velocity.Get', lambda o: o.get_property('velocity')).execute()
@@ -39,7 +39,7 @@ class TestAdapters:
         """ create adapter without IoC """
         class RotableAdapter(metaclass=AdapterMetaclass):
             interface = Rotable
-        IoC.resolve('Scope.New', IoC.scopes, IoC.scopes.current_scope.id).execute()
+        IoC.resolve('Scope.New', IoC.scopes.current_scope.id).execute()
         IoC.resolve(
             'IoC.Register',
             'Rotable.Direction.Get',

@@ -1,8 +1,7 @@
 import pytest
 
 import commands
-from commands.log_writer import LogWriter
-from main import log
+from commands.log_writer import LogWriter, log
 
 
 class FakeLog:
@@ -16,7 +15,7 @@ class FakeLog:
 class TestLogWriter:
 
     def test_log_writer(self, mocker):
-        mocker.patch('main.log.exception')
+        mocker.patch('commands.log_writer.log.exception')
         ex = ValueError('test ValueError exception')
         try:
             raise ex
