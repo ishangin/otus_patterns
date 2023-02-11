@@ -1,14 +1,18 @@
 import logging
+# import subprocess
+# import sys
 
-from fuel import Fuelable
-from move import Movable
-from rotate import Rotable
+from Interfaces.fuel import Fuelable
+from Interfaces.move import Movable
+from Interfaces.rotate import Rotable
 
 
 __all__ = ['SpaceShip', 'log']
 
-FORMAT = '%(asctime)s %(clientip)-15s %(user)-8s %(message)s'
-logging.basicConfig(format=FORMAT)
+# from mtypes.vector import Vector
+
+FORMAT = '%(asctime)s %(levelname)s %(name)s %(message)s'
+logging.basicConfig(format=FORMAT, level=logging.INFO)
 log = logging.getLogger(__name__)
 
 # class UObject(ABC):
@@ -45,3 +49,10 @@ class SpaceShip(Movable, Rotable, Fuelable):
 # sm = MovableObject(s)
 #
 # Move(sm).execute()
+
+
+if __name__ == '__main__':
+    pass
+
+    # server_start_cmd = [sys.executable, '-m', 'server']
+    # subprocess.Popen('')

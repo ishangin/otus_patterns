@@ -1,27 +1,9 @@
 import pytest
 
 import main
-from rotate import Rotable, Rotate, ChangeVelocity
-from vector import Vector
-
-
-class MockObj_Rotate(Rotable):
-
-    def __init__(self, **kwargs):
-        for k, v in kwargs.items():
-            self.__setattr__(k, v)
-
-    @property
-    def direction(self) -> int:
-        return self._direction
-
-    @property
-    def directions_number(self) -> int:
-        return self._direction_number
-
-    @property
-    def angular_velocity(self) -> int:
-        return self._angular_velocity
+from commands.change_velocity import ChangeVelocity
+from commands.rotate import Rotate
+from mtypes.vector import Vector
 
 
 class TestRotable:
@@ -52,8 +34,8 @@ class TestRotable:
         with pytest.raises(AttributeError):
             Rotate(rotable_obj).execute()
 
-    def test_rotate_without_direction_setter(self, mocker):
-        mocker.patch.object(main, 'SpaceShip', new=MockObj_Rotate)
+    def test_rotate_without_direction_setter(self, mocker, mockobj_rotate):
+        mocker.patch.object(main, 'SpaceShip', new=mockobj_rotate)
         rotable_obj = main.SpaceShip(_direction=3, _directions_number=8, _angular_velocity=2)
         with pytest.raises(AttributeError):
             Rotate(rotable_obj).execute()
@@ -84,8 +66,8 @@ class TestRotable:
         with pytest.raises(AttributeError):
             ChangeVelocity(obj).execute()
 
-    def test_change_velocity_without_velocity_setter(self, mocker):
-        mocker.patch.object(main, 'SpaceShip', new=MockObj_Rotate)
+    def test_change_velocity_without_velocity_setter(self, mocker, mockobj_rotate):
+        mocker.patch.object(main, 'SpaceShip', new=mockobj_rotate)
         rotable_obj = main.SpaceShip(_velocity=Vector(2, -4), _direction=4, _directions_number=8)
         with pytest.raises(AttributeError):
             ChangeVelocity(rotable_obj).execute()

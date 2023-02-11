@@ -1,9 +1,8 @@
 from abc import ABC, abstractmethod
 
-from command import Command
-from vector import Vector
+from mtypes.vector import Vector
 
-__all__ = ['Movable', 'Move']
+__all__ = ["Movable"]
 
 
 class Movable(ABC):
@@ -20,7 +19,7 @@ class Movable(ABC):
 
     @position.setter
     @abstractmethod
-    def position(self, v: Vector) -> Vector:
+    def position(self, v: Vector) -> None:
         """
         set position
         :return: Vector
@@ -62,11 +61,3 @@ class Movable(ABC):
 #         v = self._o.get_property('velocity')
 #         return Vector(x=v.x * cos(d / 360 * n),
 #                       y=v.y * sin(d / 360 * n))
-
-
-class Move(Command):
-    def __init__(self, m: Movable):
-        self._m = m
-
-    def execute(self) -> None:
-        self._m.position = self._m.position.add(self._m.velocity)

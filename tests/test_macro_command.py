@@ -1,22 +1,26 @@
 import pytest
 
 import main
-from command import Command
-from errors import CommandException
-from fuel import CheckFuel, BurnFuel
-from macro_command import MacroCommand, Movement, Rotatement
-from move import Move
-from rotate import Rotate, ChangeVelocity
-from vector import Vector
+from Interfaces.command import Command
+from commands.burn_fuel import BurnFuel
+from commands.change_velocity import ChangeVelocity
+from commands.check_fuel import CheckFuel
+from commands.macro_command import MacroCommand
+from commands.macro_movement import Movement
+from commands.macro_rotatement import Rotatement
+from commands.move import Move
+from commands.rotate import Rotate
+from errors.errors import CommandException
+from mtypes.vector import Vector
 
 
 class TestMacroCommand:
 
     def test_macro_command(self, mocker, mockobj):
-        mocker.patch('move.Move.execute')
-        mocker.patch('rotate.Rotate.execute')
-        mocker.patch('fuel.CheckFuel.execute')
-        mocker.patch('fuel.BurnFuel.execute')
+        mocker.patch('commands.move.Move.execute')
+        mocker.patch('commands.rotate.Rotate.execute')
+        mocker.patch('commands.check_fuel.CheckFuel.execute')
+        mocker.patch('commands.burn_fuel.BurnFuel.execute')
         mocker.patch.object(main, 'SpaceShip', new=mockobj)
         obj = main.SpaceShip()
         MacroCommand(
@@ -46,9 +50,9 @@ class TestMacroCommand:
     # movement command test
 
     def test_movement(self, mocker, mockobj):
-        mocker.patch('fuel.CheckFuel.execute')
-        mocker.patch('move.Move.execute')
-        mocker.patch('fuel.BurnFuel.execute')
+        mocker.patch('commands.check_fuel.CheckFuel.execute')
+        mocker.patch('commands.move.Move.execute')
+        mocker.patch('commands.burn_fuel.BurnFuel.execute')
         mocker.patch.object(main, 'SpaceShip', new=mockobj)
         movable_obj = main.SpaceShip()
         Movement(movable_obj).execute()
@@ -72,10 +76,10 @@ class TestMacroCommand:
     # rotatement command test
 
     def test_rotatement(self, mocker, mockobj):
-        mocker.patch('fuel.CheckFuel.execute')
-        mocker.patch('rotate.Rotate.execute')
-        mocker.patch('fuel.BurnFuel.execute')
-        mocker.patch('rotate.ChangeVelocity.execute')
+        mocker.patch('commands.check_fuel.CheckFuel.execute')
+        mocker.patch('commands.rotate.Rotate.execute')
+        mocker.patch('commands.burn_fuel.BurnFuel.execute')
+        mocker.patch('commands.change_velocity.ChangeVelocity.execute')
         mocker.patch.object(main, 'SpaceShip', new=mockobj)
         rotable_obj = main.SpaceShip()
         Rotatement(rotable_obj).execute()

@@ -1,8 +1,10 @@
 import pytest
 
 import main
-from errors import CommandException
-from fuel import Fuelable, CheckFuel, BurnFuel
+from Interfaces.fuel import Fuelable
+from commands.burn_fuel import BurnFuel
+from commands.check_fuel import CheckFuel
+from errors.errors import CommandException
 
 
 class MockObj_Fuel(Fuelable):

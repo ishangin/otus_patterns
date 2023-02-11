@@ -8,8 +8,8 @@ class Vector:
     """
     type Vector(x, y)
     """
-    x: float
-    y: float
+    x: int
+    y: int
 
     def add(self, vec: "Vector") -> "Vector":
         return Vector(self.x + vec.x, self.y + vec.y)
