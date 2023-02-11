@@ -117,6 +117,15 @@ class MockObj_Fuel(Fuelable):
         return self._fuel_rate
 
 
+class ScopesTest:
+
+    def new_scope(self):
+        ...
+
+    def current_scope(self):
+        ...
+
+
 @pytest.fixture()
 def mockobj():
     return MockObj
@@ -135,3 +144,8 @@ def mockobj_rotate():
 @pytest.fixture()
 def mockobj_fuel():
     return MockObj_Fuel
+
+
+@pytest.fixture()
+def scopes_test():
+    return ScopesTest

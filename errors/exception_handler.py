@@ -2,10 +2,9 @@ from queue import Queue
 
 from Interfaces.command import Command
 from commands.check_fuel import CheckFuel
-from commands.double_repeater import DoubleRepeater
+from commands.repeater import Repeater, DoubleRepeater
 from commands.log_writer import LogWriter
 from commands.move import Move
-from commands.repeater import Repeater
 from commands.rotate import Rotate
 
 

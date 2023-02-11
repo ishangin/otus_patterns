@@ -1,10 +1,9 @@
 from queue import Queue
 
 from commands.check_fuel import CheckFuel
-from commands.double_repeater import DoubleRepeater
+from commands.repeater import Repeater, DoubleRepeater
 from commands.log_writer import LogWriter
 from commands.move import Move
-from commands.repeater import Repeater
 from main import log
 from commands.rotate import Rotate
 from server import server
@@ -92,7 +91,7 @@ class TestExceptionHandler:
         assert isinstance(cmd, DoubleRepeater)
 
     def test_server_double_repeater_handler(self, mocker, mockobj_rotate):
-        mocker.patch('commands.double_repeater.DoubleRepeater.execute')
+        mocker.patch('commands.repeater.DoubleRepeater.execute')
         mocker.patch.object(server.Server, 'start', fake_start)
         SERVER.put_command(Move(mockobj_rotate))
         SERVER.start()

@@ -1,7 +1,7 @@
 import pytest
 
 from Interfaces.command import Command
-from commands.double_repeater import DoubleRepeater
+from commands.repeater import DoubleRepeater
 
 
 class Cmd(Command):
