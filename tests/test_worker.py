@@ -6,7 +6,7 @@ import pytest
 from commands.debug import EmptyCmd, SleepCmd
 from commands.worker import NewWorker, StopWorker, SoftStopWorker
 from errors.exception_handler import ExceptionHandler
-from server.server import Worker, Server
+from server.__main__ import Worker, Server
 
 
 class FakeServer:
@@ -59,7 +59,7 @@ class TestWorkerCommands:
         with pytest.raises(AttributeError):
             SoftStopWorker(BrokenFakeServer, 0).execute()
 
-    # @pytest.mark.skip('change server queue in workers')
+    @pytest.mark.skip('change server start with auth service')
     def test_check_real_threads(self):
         s = Server()
         s.start()
@@ -132,15 +132,3 @@ class TestWorkerClass:
         worker._soft_stop_event.set.assert_called()
         worker._soft_stop_event.set.assert_called_once()
         worker._soft_stop_event.set.assert_called_once_with()
-
-    @pytest.mark.skip(reason='postpound on later')
-    def test_worker_process(self):
-        # todo create test for worker.process() method
-        ...
-
-#todo:
-# create tests for:
-# - commands.debug
-# - class Server
-# Do design refactor for Server/Worker/Commands
-# think about using threading.Condition instead of Threading.Event for worker start stop softstop

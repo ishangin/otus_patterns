@@ -1,18 +1,21 @@
+import logging
 import threading
-from queue import Queue
+from queue import Empty, Queue
 from typing import TypeVar
 
+from commands.move import Move
 from commands.scope import ScopeNew, ScopeSetCurrent
-from interfaces.command import Command
 from errors.errors import IocResolveException
+from interfaces.command import Command
 from interfaces.uobject import UObject
-from objects import Space
+from mtypes.vector import Vector
+from objects import Space, TypeObjects
 from server.message import CommandInfo
-from server.message.operations import OPERATIONS
-
-# __all__ = ['IoC']
+from server.message.operation import OPERATION
 
 T = TypeVar('T')
+
+log = logging.getLogger(__name__)
 
 
 class Register(Command):
@@ -26,7 +29,6 @@ class Register(Command):
 
     def execute(self) -> None:
         IoC.scopes.current_scope.__setattr__(self._key, self._func)
-        # IoC._register(self._key, self._func)
 
 
 class InterpretCommand(Command):
@@ -36,55 +38,103 @@ class InterpretCommand(Command):
 
     def execute(self):
         try:
-            game_objects = IoC.resolve('GameObjects', self._command_info.object_id)
+            game_object = IoC.resolve('GameObject', self._command_info.object_id)
         except IocResolveException:
-            game_objects = None
+            game_object = None
+
+        if game_object:
+            if game_object.owner != self._command_info.args.pop("jwt"):
+                log.warning(f"DROP {self._command_info=} attempt to access foreign objects")
+                return
 
         try:
-            operation = OPERATIONS(self._command_info.operation_id).name.replace('_', '.')
+            operation = OPERATION(self._command_info.operation).name.replace('_', '.')
         except ValueError as ex:
-            raise ValueError(f'Wrong operation {self._command_info.operation_id}', ex)
+            raise ValueError(f'Wrong operation {self._command_info.operation}', ex)
 
-        params = [
-            game_objects,
-            *self._command_info.args.values()]  # FIXME: think about message format args is JSON but keys not used
-        self._queue.put(
-            IoC.resolve(
-                operation,
-                *[param for param in params if param is not None]
-            )
-        )
+        params = list(filter(None, [game_object, self._command_info.args]))
+        self._queue.put(IoC.resolve(operation, *params))
+
+
+class GameObjects:
+    def __init__(self):
+        self._store = {}
+
+    def add_game_object(self, obj: UObject):
+        self._store.update({obj.get_property("obj_id"): obj})
+
+    def obj_exists(self, obj: UObject) -> bool:
+        return obj.get_property("obj_id") in self._store.keys()
+
+    def obj_can_access(self, obj: UObject, token: str) -> bool:
+        return token == self._store[obj.get_property("obj_id")]["token"]
+
+    def get_object(self, obj_id: int) -> UObject | None:
+        return self._store.get(obj_id, {})
+
+    @property
+    def data(self) -> dict:
+        return self._store
 
 
 class GameCommand(Command):
-    def __init__(self):
-        self._queue = Queue()
-        self._game_objects = []
+    def __init__(self, arg):
+        self._id = arg["game_id"]
+        self._queue = arg["queue"]
+        self._worker_queue = arg["worker_queue"]
+        self._game_objects = GameObjects()
         self._battle_field = Space()  # use default space settings
         IoC.resolve('Scope.New', 0).execute()  # 0 args is root scope is parent for new game
         self._scope = IoC.scopes.current_scope
         IoC.resolve('IoC.Register', 'Queue', self._get_game_queue).execute()
         IoC.resolve('IoC.Register', 'GameObjects', self._get_game_objects).execute()
+        IoC.resolve('IoC.Register', 'GameObject', self._get_game_object).execute()
         IoC.resolve('IoC.Register', 'BattleField', self._get_battle_field).execute()
-        # s.games.update({len(s.games): self._queue})
+        IoC.resolve('IoC.Register', 'Create.Object', CreateObject).execute()
+        IoC.resolve('IoC.Register', 'Command.Move', Move).execute()
 
-    def _get_game_objects(self):
+    def _get_game_objects(self, _):
         return self._game_objects
 
-    def _get_battle_field(self):
+    def _get_game_object(self, obj_id):
+        return self._game_objects.get_object(obj_id)
+
+    def _get_battle_field(self, _):
         return self._battle_field
 
-    def add_game_object(self, obj: UObject):
-        return self._game_objects.append(obj)
-
-    def _get_game_queue(self):
+    def _get_game_queue(self, _):
         return self._queue
 
     def execute(self) -> None:
-        command = self._queue.get(timeout=1)
+        command = None
+        try:
+            command = self._queue.get(timeout=1)
+        except Empty:
+            pass
+
         if command:
+            log.info(f'GAME_ID: {self._id} : PID {threading.current_thread().ident} : CMD {command}')
             IoC.resolve('Scope.SetCurrent', self._scope.id).execute()
             command.execute()
+
+        self._worker_queue.put(self)
+
+
+class CreateObject(Command):
+    def __init__(self, obj: dict):
+        self._obj = obj
+
+    def execute(self) -> None:
+        objType = self._obj.pop("type")
+        conn = self._obj.pop("conn")
+        self._obj["owner"] = self._obj.pop("jwt")
+        # FIXME: All object have position and velocity ???
+        self._obj["position"] = Vector(*self._obj.pop("position"))
+        self._obj["velocity"] = Vector(*self._obj.pop("velocity"))
+        obj = TypeObjects.get(objType)(**self._obj)
+        game_objects = IoC.resolve("GameObjects", -1)
+        game_objects.add_game_object(obj)
+        conn.send(f"OBJECT_ID: {obj.obj_id}")
 
 
 class Scopes(threading.local):
@@ -139,7 +189,7 @@ class IoC:
             while not result:
                 try:
                     result = scope.__getattribute__(key)(*args)
-                    if not result and 'Set' in key:
+                    if result is not None or 'Set' in key:
                         break
                 except AttributeError:
                     scope = IoC.scopes.value[scope.parent]
@@ -147,16 +197,3 @@ class IoC:
             raise IocResolveException(f'unresolved registration {key}')
 
         return result
-
-    # @staticmethod
-    # def _register(key: str, func: callable):
-    #     SCOPES.current_scope.__setattr__(key, func)
-
-
-# if __name__ == '__main__':
-#     IoC.resolve('Scope.New', IoC.scopes, IoC.scopes.current_scope.id).execute()
-#     IoC.resolve('IoC.Register', 'pow2', lambda x: x ** 2).execute()
-#     print(123)
-
-
-# todo: resolve circular import. IoC -> Scopes -> Register -> IoC

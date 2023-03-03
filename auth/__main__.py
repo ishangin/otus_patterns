@@ -2,11 +2,10 @@ import json
 import logging
 import threading
 from multiprocessing.connection import Listener
-from struct import unpack, pack
+from struct import pack, unpack
 
 from .auth import Auth
-from models import Message, MessageType, User, Game
-from db import GAMES
+from .models import Message, MessageType, User
 
 FORMAT = '%(asctime)s %(levelname)s %(name)s %(message)s'
 logging.basicConfig(format=FORMAT, level=logging.DEBUG)
@@ -14,7 +13,8 @@ logging.basicConfig(format=FORMAT, level=logging.DEBUG)
 log = logging.getLogger(__name__)
 HOST = 'localhost'
 PORT = 5578
-listener = Listener((HOST, PORT))
+PASSWORD = "P@$$w0rd"
+listener = Listener((HOST, PORT), authkey=bytes(PASSWORD, "UTF8"))
 
 
 class AuthService:
@@ -30,6 +30,7 @@ class AuthService:
     def start(self):
         log.debug(f'Start listening on {HOST}:{PORT}')
         self._connection = listener.accept()
+        log.debug(f'Connected: {listener.last_accepted}')
         while not self.stop_event.is_set():
             try:
                 if not self._connection.poll():
@@ -49,28 +50,25 @@ class AuthService:
         message_type, data = unpack('I', message[:4])[0], message[4:]
         # TODO: try except if json.loads failed
         data = json.loads(data.decode('utf-8'))
-        message = Message(message_type, data)
-        log.debug(f'Message received {message=}')
+        message = Message(MessageType(message_type), data)
+        log.debug(f'AuthService message received {message=}')
         match message.type:
-            case MessageType.NEW_GAME:
-                users = message.data.get('users')
-                game_id = len(GAMES)
-                game = GAMES.append({
-                    'id': game_id,
-                    'users': [Auth(User(u)).get_user().id for u in users]
-                })
-                self._connection.send(pack('2I', MessageType.RESPONSE, game_id))
             case MessageType.GET_JWT:
                 user = User(login=message.data.get('user'),
                             password=message.data.get('password'))
                 auth = Auth(user)
                 auth.check_pass()
                 if auth.user.authenticated:
-                    game_id = message.data.get('game_id')
-                    game = Game(**GAMES[int(game_id)])
-                    jwt = auth.get_jwt(game)
+                    jwt = auth.get_jwt()
                     if jwt:
-                        self._connection.send(pack('I', MessageType.RESPONSE) + bytes(jwt.encode('UTF-8')))
+                        data = {"id": message.data["id"], "user_id": auth.user.id, "jwt": jwt}
+                    else:
+                        # todo: need auth status success or failed in message format
+                        data = {"id": message.data["id"], "jwt": "error get jwt"}
+                else:
+                    data = {"id": message.data["id"], "jwt": "invalid user or password"}
+
+                self._connection.send(pack('I', MessageType.RESPONSE.value) + bytes(json.dumps(data), "UTF8"))
 
 
 if __name__ == '__main__':

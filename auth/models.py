@@ -1,12 +1,11 @@
 from dataclasses import dataclass
 from enum import Enum
+from queue import Queue
 
 
 class MessageType(Enum):
-    NEW_GAME = 0
-    AUTH = 1
-    GET_JWT = 2
-    RESPONSE = 3
+    GET_JWT: int = 12
+    RESPONSE: int = 13
 
 
 @dataclass
@@ -22,9 +21,10 @@ class Game:
     id: int
     players: list
     tokens: list
+    queue: Queue
 
 
 @dataclass
 class Message:
-    type: int
+    type: MessageType
     data: dict

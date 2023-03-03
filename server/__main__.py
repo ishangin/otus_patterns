@@ -1,8 +1,11 @@
+import json
+import struct
 from enum import Enum
 from queue import Queue, Empty
 from random import choice
 import threading
 import logging
+from time import sleep
 
 # from commands.game import GameCommand
 import commands
@@ -12,15 +15,18 @@ from errors.exception_handler import ExceptionHandler
 from interfaces.command import Command
 from interfaces.state import State
 from ioc.container import IoC
-from server.connector import Connector
+from server.connector import Connector, AuthServiceConnector
 
+from mtypes.net import Address
 from server.message import Message
-from server.message.operations import OPERATIONS
-
-__all__ = ['Server', 'Worker']
+from server.message.operation import OPERATION
 
 from server.modes import Mode, Normal
 
+__all__ = ['Server', 'Worker']
+
+FORMAT = '%(asctime)s %(levelname)s %(name)s %(message)s'
+logging.basicConfig(format=FORMAT, level=logging.INFO)
 log = logging.getLogger(__name__)
 
 
@@ -89,10 +95,11 @@ class Worker:
 
 class Server:
 
-    def __init__(self):
+    def __init__(self, auth_service_addr: Address):
         self._connector = Connector(message_router=self.message_router)
+        self._auth_connector = AuthServiceConnector(auth_service_addr, message_router=self.message_router)
         self._workers = dict()
-        self.games = dict()
+        self.games = GAMES
 
     def spawn_worker(self):
         _q = Queue()
@@ -113,6 +120,7 @@ class Server:
 
     def start(self):
         self._connector.start()
+        self._auth_connector.start()
         self.spawn_worker()
 
     def stop(self):
@@ -123,34 +131,71 @@ class Server:
 
     def put_command(self, cmd: Command, game_id: int = None):
         if game_id is not None:
-            worker = self.games.get(game_id, None)
+            worker = self.games[game_id]["worker"]
             worker.queue.put(cmd)
         else:
             log.warning(f'DROP {cmd=}, game_id is None')
 
-    def message_router(self, messsage: Message):
-        if messsage.command_info.operation_id == OPERATIONS.Game_New.value:
-            worker = self.get_worker()  # get free (now random) worker
-            game_id = self.new_game(worker)
-        else:
-            game_id = messsage.game_id
-            jwt = messsage.command_info.args.get('jwt')
-            if not jwt or jwt not in GAMES[game_id]['tokens']:
-                log.warning(f'DROP {messsage=}, invalid token')
+    def message_router(self, message: Message):
+        match message.command_info.operation:
+            case OPERATION.Get_Token:
+                # todo: move to Message.conn and AuthService support that
+                message.command_info.args.update({"id": message.conn})
+                self._auth_connector.send(
+                    struct.pack(
+                        "I",
+                        message.command_info.operation.value) + bytes(json.dumps(message.command_info.args), "UTF8"))
                 return
-            worker = self.games.get(messsage.game_id)
+            case OPERATION.Auth_Response:
+                # todo: message.command_info.args["id"] -> message.conn
+                self._connector.clients[message.command_info.args["id"]]["connection"].send(
+                    "TOKEN: " + message.command_info.args["jwt"])
+
+                # add user token to his games after success auth
+                if len(message.command_info.args["jwt"]) > 100:  # todo: temporary hack. need check auth status
+                    user_games_id = [_id
+                                     for _id, games in self.games.items()
+                                     if int(message.command_info.args["user_id"]) in games["players"]]
+                    [self.games[game_id]["tokens"].append(message.command_info.args["jwt"])
+                     for game_id in user_games_id]
+                return
+            case OPERATION.Game_New:
+                worker = self.get_worker()  # get free (now random) worker
+                game_id = self.new_game(worker)
+                # add first token. other tokens added when users auth completed
+                self.games[game_id]["tokens"].append(message.command_info.args["jwt"])
+                self.games[game_id]["players"] = message.command_info.args["players"]  # MIND: this mast be in IoC!!!
+                message.command_info.args.pop("jwt")
+                message.command_info.args.pop("players")
+                message.command_info.args["game_id"] = game_id
+                message.command_info.args["queue"] = self.games[game_id]["queue"]
+                message.command_info.args["worker_queue"] = worker.queue  # GameCommand place in worker queue myself
+                q = worker.queue
+                self._connector.clients[message.conn]["connection"].send("GAME_ID: " + str(game_id))
+            case _:
+                game_id = message.game_id
+                jwt = message.command_info.args["jwt"]
+                if jwt not in GAMES[game_id]["tokens"]:
+                    log.warning(f"DROP {message=}, invalid token")
+                    return
+                worker = self.games.get(message.game_id)
+                q = self.games[game_id]["queue"]
+                if message.command_info.operation == OPERATION.Create_Object:
+                    message.command_info.args.update({"conn": self._connector.clients[message.conn]["connection"]})
+
         if worker:
-            self.put_command(cmd=IoC.resolve('Command.Interpret', worker.queue, messsage.command_info),
+            self.put_command(cmd=IoC.resolve('Command.Interpret', q, message.command_info),
                              game_id=game_id)
         else:
-            log.warning(f'DROP {messsage=}, worker not found for {game_id=}')
+            log.warning(f'DROP {message=}, worker not found for {game_id=}')
 
     def new_game(self, worker: Worker) -> int:
         """
         return new Game_ID
         """
         game_id = len(self.games)
-        self.games.update({game_id: worker})  # game <-> worker matching
+        # game <-> worker matching
+        self.games.update({game_id: {"worker": worker, "tokens": [], "players": [], "queue": Queue()}})
         return game_id
 
     def stop_game(self, game_id: int) -> None:
@@ -173,11 +218,10 @@ IoC.resolve('IoC.Register', 'Worker.SoftStop', commands.SoftStopWorker).execute(
 
 
 if __name__ == '__main__':
-    s = Server()
+    s = Server(auth_service_addr=("127.0.0.1", 5578, bytes("P@$$w0rd", "UTF8")))
     s.start()
-    # s.put_command(LogWriter(ValueError('test')))
-    IoC.resolve('Worker.New', s).execute()
-    # IoC.resolve('Game.New').execute()
-    s.put_command(IoC.resolve('Game.New'))
+    while True:
+        sleep(5)
+        # todo: create valid stop signal to server
+
     s.stop()
-    print('END')
