@@ -57,7 +57,8 @@ class Connector:
 
     def _on_message_received(self, connection, mask):
         recv = connection.recv()
-        (game_id, object_id, operation_id), args = unpack('3I', recv[:12]), recv[12:]   # 3xint game_id, object_id, operation_id
+        # 3x int  game_id, object_id, operation_id
+        (game_id, object_id, operation_id), args = unpack('3I', recv[:12]), recv[12:]
         try:
             args = json.loads(args.decode('utf-8'))
         except Exception as ex:

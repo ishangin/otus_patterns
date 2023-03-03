@@ -22,7 +22,7 @@ class Movable(ABC):
     def position(self, v: Vector) -> None:
         """
         set position
-        :return: Vector
+        :return: None
         """
         ...
 

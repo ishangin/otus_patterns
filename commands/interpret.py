@@ -2,8 +2,8 @@ from queue import Queue
 
 from interfaces.command import Command
 from ioc.container import IoC
-from message import CommandInfo
-from message.operations import OPERATIONS
+from server.message import CommandInfo
+from server.message.operations import OPERATIONS
 
 
 class InterpretCommand(Command):

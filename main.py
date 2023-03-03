@@ -1,9 +1,11 @@
 import logging
 from server.server import Server
 # import sys
-from typing import Any
-
-from interfaces.uobject import UObject
+# from typing import Any
+#
+# import objects
+#
+# from interfaces.uobject import UObject
 
 
 FORMAT = '%(asctime)s %(levelname)s %(name)s %(message)s'
@@ -16,17 +18,15 @@ log = logging.getLogger(__name__)
 #
 #     def __init__(self, *args, **kwargs):
 #         pass
-
-
-class SpaceShip(UObject):
-
-    def get_property(self, name: str) -> Any:
-        return self.__getattribute__(name)
-
-    def set_property(self, name: str, value: Any) -> None:
-        self.__setattr__(name, value)
-
-
+# class SpaceShip(UObject):
+#
+#     def get_property(self, name: str) -> Any:
+#         return self.__getattribute__(name)
+#
+#     def set_property(self, name: str, value: Any) -> None:
+#         self.__setattr__(name, value)
+#
+#
 # s = SpaceShip()
 # s.set_property('position', Vector(12, 5))
 # s.set_property('velocity', Vector(-7, 3))

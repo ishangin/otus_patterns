@@ -1,15 +1,12 @@
-from abc import ABC, abstractmethod
 from typing import Any
 
 __all__ = ['UObject']
 
 
-class UObject(ABC):
+class UObject:
 
-    @abstractmethod
     def get_property(self, name: str) -> Any:
-        raise NotImplementedError
+        return self.__getattribute__(name)
 
-    @abstractmethod
     def set_property(self, name: str, value: Any) -> None:
-        raise NotImplementedError
+        self.__setattr__(name, value)

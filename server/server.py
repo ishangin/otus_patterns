@@ -73,14 +73,15 @@ class Worker:
                 cmd = self.queue.get(block=True, timeout=1)
             except Empty:
                 if self._soft_stop_event.is_set():
-                    log.info(f'THREAD SOFT STOP {self._worker_thread.name} : ID {self.id} : PID {threading.current_thread().ident}')
+                    thread = {'name': self._worker_thread.name,
+                              'id': threading.current_thread().ident}
+                    log.info(f'THREAD SOFT STOP {thread["name"]} : ID {self.id} : PID {thread["id"]}')
                     return
                 else:
                     continue
             log.info(f'{self._worker_thread.name} : ID {self.id} : PID {threading.current_thread().ident} : CMD {cmd}')
             try:
-                self.mode.execute(cmd=cmd)
-
+                cmd.execute()
             except Exception as ex:
                 self._ex_handler.handle(cmd, ex)
         log.info(f'STOP: {self._worker_thread.name} : ID {self.id} : THREAD PID {threading.current_thread().ident}')
@@ -166,7 +167,7 @@ class Server:
 
 
 IoC.resolve('IoC.Register', 'Worker.New', commands.NewWorker).execute()
-IoC.resolve('IoC.Register', 'Worker.Stop',commands.StopWorker).execute()
+IoC.resolve('IoC.Register', 'Worker.Stop', commands.StopWorker).execute()
 IoC.resolve('IoC.Register', 'Worker.SoftStop', commands.SoftStopWorker).execute()
 # IoC.resolve('IoC.Register', 'Game.New', GameCommand).execute()
 

@@ -7,8 +7,7 @@ USERS = [
     'id': 0,
     'login': 'user0',
     'password': 'pass0'
-   },
-
+  },
   {
     'id': 1,
     'login': 'user1',

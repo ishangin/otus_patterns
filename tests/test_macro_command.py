@@ -1,6 +1,6 @@
 import pytest
 
-import main
+import objects
 from interfaces.command import Command
 from commands.burn_fuel import BurnFuel
 from commands.change_velocity import ChangeVelocity
@@ -21,8 +21,8 @@ class TestMacroCommand:
         mocker.patch('commands.rotate.Rotate.execute')
         mocker.patch('commands.check_fuel.CheckFuel.execute')
         mocker.patch('commands.burn_fuel.BurnFuel.execute')
-        mocker.patch.object(main, 'SpaceShip', new=mockobj)
-        obj = main.SpaceShip()
+        mocker.patch.object(objects, 'SpaceShip', new=mockobj)
+        obj = objects.SpaceShip()
         MacroCommand(
             [
                 Move(obj),
@@ -53,23 +53,23 @@ class TestMacroCommand:
         mocker.patch('commands.check_fuel.CheckFuel.execute')
         mocker.patch('commands.move.Move.execute')
         mocker.patch('commands.burn_fuel.BurnFuel.execute')
-        mocker.patch.object(main, 'SpaceShip', new=mockobj)
-        movable_obj = main.SpaceShip()
+        mocker.patch.object(objects, 'SpaceShip', new=mockobj)
+        movable_obj = objects.SpaceShip()
         Movement(movable_obj).execute()
         assert CheckFuel.execute.called
         assert Move.execute.called
         assert BurnFuel.execute.called
 
     def test_movement_values(self, mocker, mockobj):
-        mocker.patch.object(main, 'SpaceShip', new=mockobj)
-        movable_obj = main.SpaceShip(_position=Vector(10, 10), _velocity=Vector(2, -4), _fuel=10, _fuel_rate=2)
+        mocker.patch.object(objects, 'SpaceShip', new=mockobj)
+        movable_obj = objects.SpaceShip(_position=Vector(10, 10), _velocity=Vector(2, -4), _fuel=10, _fuel_rate=2)
         Movement(movable_obj).execute()
         assert movable_obj.position == Vector(12, 6)
         assert movable_obj.fuel == 8
 
     def test_movement_error(self, mocker, mockobj):
-        mocker.patch.object(main, 'SpaceShip', new=mockobj)
-        movable_obj = main.SpaceShip(_fuel=1, _fuel_rate=2)
+        mocker.patch.object(objects, 'SpaceShip', new=mockobj)
+        movable_obj = objects.SpaceShip(_fuel=1, _fuel_rate=2)
         with pytest.raises(CommandException):
             Movement(movable_obj).execute()
 
@@ -80,8 +80,8 @@ class TestMacroCommand:
         mocker.patch('commands.rotate.Rotate.execute')
         mocker.patch('commands.burn_fuel.BurnFuel.execute')
         mocker.patch('commands.change_velocity.ChangeVelocity.execute')
-        mocker.patch.object(main, 'SpaceShip', new=mockobj)
-        rotable_obj = main.SpaceShip()
+        mocker.patch.object(objects, 'SpaceShip', new=mockobj)
+        rotable_obj = objects.SpaceShip()
         Rotatement(rotable_obj).execute()
         assert CheckFuel.execute.called
         assert Rotate.execute.called
@@ -89,8 +89,8 @@ class TestMacroCommand:
         assert ChangeVelocity.execute.called
 
     def test_rotatement_values(self, mocker, mockobj):
-        mocker.patch.object(main, 'SpaceShip', new=mockobj)
-        movable_obj = main.SpaceShip(
+        mocker.patch.object(objects, 'SpaceShip', new=mockobj)
+        movable_obj = objects.SpaceShip(
             _position=Vector(10, 10),
             _velocity=Vector(2, -4),
             _fuel=10,
@@ -105,7 +105,7 @@ class TestMacroCommand:
         assert movable_obj.velocity == Vector(0, -4)
 
     def test_rotatement_error(self, mocker, mockobj):
-        mocker.patch.object(main, 'SpaceShip', new=mockobj)
-        rotable_obj = main.SpaceShip(_fuel=1, _fuel_rate=2)
+        mocker.patch.object(objects, 'SpaceShip', new=mockobj)
+        rotable_obj = objects.SpaceShip(_fuel=1, _fuel_rate=2)
         with pytest.raises(CommandException):
             Rotatement(rotable_obj).execute()

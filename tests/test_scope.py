@@ -3,6 +3,7 @@ import pytest
 from commands.scope import ScopeNew, ScopeSetCurrent
 from ioc.container import Scopes  # todo: using from module scope.Scopes
 
+
 @pytest.mark.skip('Scope.New changed')
 class TestScopesCommand:
     """

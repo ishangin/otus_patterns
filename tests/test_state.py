@@ -1,11 +1,9 @@
 from queue import Queue
 from time import sleep
 
-import pytest
-
 from commands.state import MoveToCommand, RunCommand
 from server.server import Server
-from server.modes import Normal, MoveTo, Mode
+from server.modes import Normal, MoveTo
 
 
 class TestWorkerCommands:

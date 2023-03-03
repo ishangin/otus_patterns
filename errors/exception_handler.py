@@ -13,12 +13,12 @@ class ExceptionHandler:
     def __init__(self, queue: Queue):
         self.queue = queue
         self.ex_dispatcher = {
-            Move:           self.double_repeater_handler,
-            Rotate:         self.log_handler,
-            CheckFuel:      self.repeater_handler,
-            Repeater:       self.log_handler,
+            Move: self.double_repeater_handler,
+            Rotate: self.log_handler,
+            CheckFuel: self.repeater_handler,
+            Repeater: self.log_handler,
             DoubleRepeater: self.repeater_handler,
-            LogWriter:      self.default_handler,
+            LogWriter: self.default_handler,
         }
 
     def handle(self, cmd: Command, ex: Exception):

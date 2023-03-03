@@ -4,7 +4,7 @@ import threading
 from multiprocessing.connection import Listener
 from struct import unpack, pack
 
-from auth import Auth
+from .auth import Auth
 from models import Message, MessageType, User, Game
 from db import GAMES
 
@@ -45,21 +45,22 @@ class AuthService:
                 self._message_received(message)
 
     def _message_received(self, message):
+        # TODO: try except if can not unpack
         message_type, data = unpack('I', message[:4])[0], message[4:]
+        # TODO: try except if json.loads failed
         data = json.loads(data.decode('utf-8'))
         message = Message(message_type, data)
         log.debug(f'Message received {message=}')
         match message.type:
-            case MessageType.NEW_GAME.value:
-
+            case MessageType.NEW_GAME:
                 users = message.data.get('users')
                 game_id = len(GAMES)
                 game = GAMES.append({
                     'id': game_id,
                     'users': [Auth(User(u)).get_user().id for u in users]
                 })
-                self._connection.send(pack('2I', MessageType.RESPONSE.value, game_id))
-            case MessageType.GET_JWT.value:
+                self._connection.send(pack('2I', MessageType.RESPONSE, game_id))
+            case MessageType.GET_JWT:
                 user = User(login=message.data.get('user'),
                             password=message.data.get('password'))
                 auth = Auth(user)
@@ -69,7 +70,7 @@ class AuthService:
                     game = Game(**GAMES[int(game_id)])
                     jwt = auth.get_jwt(game)
                     if jwt:
-                        self._connection.send(pack('I', MessageType.RESPONSE.value) + bytes(jwt.encode('UTF-8')))
+                        self._connection.send(pack('I', MessageType.RESPONSE) + bytes(jwt.encode('UTF-8')))
 
 
 if __name__ == '__main__':

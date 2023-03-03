@@ -5,10 +5,12 @@ from typing import TypeVar
 from commands.scope import ScopeNew, ScopeSetCurrent
 from interfaces.command import Command
 from errors.errors import IocResolveException
+from interfaces.uobject import UObject
+from objects import Space
 from server.message import CommandInfo
 from server.message.operations import OPERATIONS
 
-__all__ = ['IoC']
+# __all__ = ['IoC']
 
 T = TypeVar('T')
 
@@ -57,15 +59,23 @@ class InterpretCommand(Command):
 class GameCommand(Command):
     def __init__(self):
         self._queue = Queue()
-        self._game_objects = {}
+        self._game_objects = []
+        self._battle_field = Space()  # use default space settings
         IoC.resolve('Scope.New', 0).execute()  # 0 args is root scope is parent for new game
         self._scope = IoC.scopes.current_scope
         IoC.resolve('IoC.Register', 'Queue', self._get_game_queue).execute()
         IoC.resolve('IoC.Register', 'GameObjects', self._get_game_objects).execute()
+        IoC.resolve('IoC.Register', 'BattleField', self._get_battle_field).execute()
         # s.games.update({len(s.games): self._queue})
 
     def _get_game_objects(self):
         return self._game_objects
+
+    def _get_battle_field(self):
+        return self._battle_field
+
+    def add_game_object(self, obj: UObject):
+        return self._game_objects.append(obj)
 
     def _get_game_queue(self):
         return self._queue
