@@ -1,0 +1,6 @@
+class BaseEvent(Exception):
+    ...
+
+
+class CollideEvent(BaseEvent):
+    ...
