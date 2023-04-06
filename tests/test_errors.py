@@ -8,13 +8,12 @@ from commands.log_writer import LogWriter
 from commands.move import Move
 from main import log
 from commands.rotate import Rotate
-from server import server
-from server.server import Server
 from errors.exception_handler import ExceptionHandler
+from server.__main__ import Server
 
 Q = Queue()
 
-SERVER = Server()
+SERVER = None  # Server(("localhost", 7777, b''))
 
 EX_HANDLER = ExceptionHandler(Q)
 
@@ -49,7 +48,7 @@ class TestExceptionHandler:
     @pytest.mark.skip('server changed start method')
     def test_server_log_handler(self, mocker, mockobj_move):
         mocker.patch('main.log.exception')
-        mocker.patch.object(server.Server, 'start', fake_start)
+        mocker.patch.object(Server, 'start', fake_start)
         SERVER.put_command(Rotate(mockobj_move))
         SERVER.start()
         log.exception.assert_called()
@@ -74,7 +73,7 @@ class TestExceptionHandler:
     @pytest.mark.skip('server changed start method')
     def test_server_repeater_handler(self, mocker, mockobj_move):
         mocker.patch('commands.repeater.Repeater.execute')
-        mocker.patch.object(server.Server, 'start', fake_start)
+        mocker.patch.object(Server, 'start', fake_start)
         SERVER.put_command(CheckFuel(mockobj_move))
         SERVER.start()
         Repeater.execute.assert_called()
@@ -96,9 +95,7 @@ class TestExceptionHandler:
     @pytest.mark.skip('server changed start method')
     def test_server_double_repeater_handler(self, mocker, mockobj_rotate):
         mocker.patch('commands.repeater.DoubleRepeater.execute')
-        mocker.patch.object(server.Server, 'start', fake_start)
+        mocker.patch.object(Server, 'start', fake_start)
         SERVER.put_command(Move(mockobj_rotate))
         SERVER.start()
         DoubleRepeater.execute.assert_called()
-
-# todo: make test for default_handler

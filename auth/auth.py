@@ -1,6 +1,9 @@
-import jwt
+import time
+
 import db
-from models import User, Game
+import jwt
+
+from .models import User
 
 
 class Auth:
@@ -15,19 +18,17 @@ class Auth:
 
     def get_user(self) -> User:
         try:
-            return User(**list(filter(lambda x: x['login'] == self.user.login, db.USERS))[0])
+            user_id = [k for k, v in db.USERS.items() if v["login"] == self.user.login][0]
+            return User(**db.USERS[user_id], id=user_id)
         except IndexError:
             raise ValueError('User not found')
 
-    def get_jwt(self, game: Game) -> str:
+    def get_jwt(self) -> str:
         if not self.user.authenticated:
             raise ValueError('user was not authenticated')
-        if self.user.id not in game.players:
-            raise ValueError('user is not member of this game')
 
-        token = jwt.encode({self.user.id: self.user.login, game.id: str(game.players)},
+        token = jwt.encode({self.user.id: self.user.login, "created": time.time_ns()},
                            self.user.password, algorithm="HS256")
-        db.GAMES[game.id]['tokens'].append(token)
         return token
 
 
@@ -35,4 +36,3 @@ if __name__ == '__main__':
     u = User('user0', 'pass0')
     auth = Auth(u)
     auth.check_pass()
-    print(u)

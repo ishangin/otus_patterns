@@ -9,7 +9,7 @@ class CheckCollision(Command):
     def __init__(self, obj_a: UObject, obj_b: UObject):
         self._obj_a = obj_a
         self._obj_b = obj_b
-        self.queue = IoC.resolve('Queue')
+        self.queue = IoC.resolve('Queue', -1)
 
     def execute(self):
         if self._obj_a == self._obj_b:

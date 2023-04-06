@@ -11,8 +11,8 @@ class HandleObject(Command):
         self._obj = obj
 
     def execute(self):
-        battle_field = IoC.resolve('BattleField')
-        queue = IoC.resolve('Queue')
+        battle_field = IoC.resolve('BattleField', -1)
+        queue = IoC.resolve('Queue', -1)
 
         regions = battle_field.get_property("regions")
         position = self._obj.get_property("position")

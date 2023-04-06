@@ -2,7 +2,7 @@ from queue import Queue
 
 from interfaces.command import Command
 from server.modes import Mode, MoveTo, Normal
-from server.server import Worker
+from server.__main__ import Worker
 import logging
 
 

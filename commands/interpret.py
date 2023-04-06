@@ -3,7 +3,7 @@ from queue import Queue
 from interfaces.command import Command
 from ioc.container import IoC
 from server.message import CommandInfo
-from server.message.operations import OPERATIONS
+from server.message.operation import OPERATION
 
 
 class InterpretCommand(Command):
@@ -14,10 +14,11 @@ class InterpretCommand(Command):
     def execute(self):
         params = [
             IoC.resolve('GameObjects'),
-            *self._command_info.args.values()]  # FIXME: think about message format args is JSON but keys not used
+            *self._command_info.args.values()  # FIXME: think about message format args is JSON but keys not used
+        ]
         self._queue.put(
             IoC.resolve(
-                OPERATIONS(self._command_info.operation_id).name.replace('_', '.'),
+                OPERATION(self._command_info.operation).name.replace('_', '.'),
                 *params
             )
         )
